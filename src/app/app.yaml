@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-kyverno
+  labels:
+    app: demo-kyverno
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-kyverno
+  template:
+    metadata:
+      labels:
+        app: demo-kyverno
+    spec:
+      containers:
+      - name: demo-kyverno
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-kyverno
+  labels:
+    app: demo-kyverno
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: demo-kyverno
+  type: NodePort
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-kyverno
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: demo.info
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+           name: demo-kyverno
+           port:
+             number: 80
